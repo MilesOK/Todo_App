@@ -14,12 +14,17 @@ const App = () => {
     if (!trimmedName) return;
 
     setUserName(trimmedName);
+    setNameInput("");
+  };
+
+  const handleLogout = () => {
+    setUserName("");
   };
 
   return (
     <Pattern>
       {userName ? (
-        <Todo userName={userName} />
+        <Todo userName={userName} onLogout={handleLogout} />
       ) : (
         <section className="animate-fade-slide-up px-4 py-10 text-slate-950">
           <form

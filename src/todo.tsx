@@ -1,8 +1,9 @@
-import { type ChangeEvent, type FormEvent, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 
 type Task = {
   id: string;
   title: string;
+  completed: boolean;
 };
 
 
@@ -11,12 +12,40 @@ const initialTasks: Task[] = [];
 
 type TodoProps = {
   userName: string;
+  onLogout: () => void;
 };
 
-const Todo = ({ userName }: TodoProps) => {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+const getStorageKey = (userName: string) => `todo-tasks-${userName}`;
+
+const getSavedTasks = (userName: string): Task[] => {
+  const savedTasks = localStorage.getItem(getStorageKey(userName));
+
+  if (!savedTasks) return initialTasks;
+
+  try {
+    const parsedTasks = JSON.parse(savedTasks) as Task[];
+
+    if (!Array.isArray(parsedTasks)) return initialTasks;
+
+    return parsedTasks.map((task) => ({
+      id: task.id,
+      title: task.title,
+      completed: Boolean(task.completed),
+    }));
+  } catch {
+    return initialTasks;
+  }
+};
+
+const Todo = ({ userName, onLogout }: TodoProps) => {
+  const [tasks, setTasks] = useState<Task[]>(() => getSavedTasks(userName));
   const [newTask, setNewTask] = useState("");
   const taskTitle = newTask.trim();
+  const openTasks = tasks.filter((task) => !task.completed).length;
+
+  useEffect(() => {
+    localStorage.setItem(getStorageKey(userName), JSON.stringify(tasks));
+  }, [tasks, userName]);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,7 +54,7 @@ const Todo = ({ userName }: TodoProps) => {
 
     setTasks((currentTasks) => [
       ...currentTasks,
-      { id: crypto.randomUUID(), title: taskTitle },
+      { id: crypto.randomUUID(), title: taskTitle, completed: false },
     ]);
     setNewTask("");
   };
@@ -40,18 +69,36 @@ const Todo = ({ userName }: TodoProps) => {
     setNewTask(e.target.value);
   };
 
+  const toggleTask = (taskId: string) => {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId ? { ...task, completed: !task.completed } : task,
+      ),
+    );
+  };
+
   return (
     <section className="animate-fade-slide-up px-4 py-10 text-slate-950">
       <form
         onSubmit={handleSubmit}
         className="mx-auto flex w-full max-w-md flex-col gap-6"
       >
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold">Tasks</h1>
-          <p className="text-sm text-slate-600" aria-live="polite">
-            {tasks.length} open {tasks.length === 1 ? "task" : "tasks"}
-          </p>
-          <p>Welcome, {userName}!</p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold">Tasks</h1>
+            <p className="text-sm text-slate-600" aria-live="polite">
+              {openTasks} open {openTasks === 1 ? "task" : "tasks"}
+            </p>
+            <p>Welcome, {userName}!</p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onLogout}
+            className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-300 active:translate-y-0"
+          >
+            Logout
+          </button>
         </div>
 
         <div className="flex gap-3">
@@ -83,9 +130,21 @@ const Todo = ({ userName }: TodoProps) => {
                 key={task.id}
                 className="animate-task-pop flex items-center justify-between gap-4 rounded border border-slate-200 bg-white p-3 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
               >
-                <span className="min-w-0 flex-1 break-words">
-                  {task.title}
-                </span>
+                <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={task.completed}
+                    onChange={() => toggleTask(task.id)}
+                    className="h-4 w-4 cursor-pointer rounded border-slate-300 text-blue-600 transition duration-200 focus:ring-2 focus:ring-blue-300"
+                  />
+                  <span
+                    className={`min-w-0 flex-1 break-words transition duration-200 ${
+                      task.completed ? "text-slate-400 line-through" : ""
+                    }`}
+                  >
+                    {task.title}
+                  </span>
+                </label>
 
                 <button
                   type="button"
