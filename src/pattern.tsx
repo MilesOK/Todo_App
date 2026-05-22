@@ -1,6 +1,10 @@
-import Todo from './todo'
+import { type ReactNode } from "react";
 
-const Pattern = () => {
+type PatternProps = {
+  children: ReactNode;
+};
+
+const Pattern = ({ children }: PatternProps) => {
   return (
 <div className="min-h-screen w-full bg-white relative">
   {/*  Diagonal Cross Bottom Right Fade Grid Background */}
@@ -20,7 +24,7 @@ const Pattern = () => {
   />
   {/* Your Content/Components */}
   <div className="relative z-10">
-    <Todo/>
+    {children}
   </div>
 </div>
   );

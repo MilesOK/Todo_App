@@ -5,13 +5,15 @@ type Task = {
   title: string;
 };
 
-const initialTasks: Task[] = [
-  { id: crypto.randomUUID(), title: "Eat" },
-  { id: crypto.randomUUID(), title: "Go to Sleep" },
-];
+
+const initialTasks: Task[] = [];
 
 
-const Todo = () => {
+type TodoProps = {
+  userName: string;
+};
+
+const Todo = ({ userName }: TodoProps) => {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [newTask, setNewTask] = useState("");
   const taskTitle = newTask.trim();
@@ -39,7 +41,7 @@ const Todo = () => {
   };
 
   return (
-    <section className="px-4 py-10 text-slate-950">
+    <section className="animate-fade-slide-up px-4 py-10 text-slate-950">
       <form
         onSubmit={handleSubmit}
         className="mx-auto flex w-full max-w-md flex-col gap-6"
@@ -49,6 +51,7 @@ const Todo = () => {
           <p className="text-sm text-slate-600" aria-live="polite">
             {tasks.length} open {tasks.length === 1 ? "task" : "tasks"}
           </p>
+          <p>Welcome, {userName}!</p>
         </div>
 
         <div className="flex gap-3">
@@ -58,7 +61,7 @@ const Todo = () => {
           <input
             id="new-task"
             type="text"
-            className="min-w-0 flex-1 rounded border border-slate-300 bg-white p-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            className="min-w-0 flex-1 rounded border border-slate-300 bg-white p-2 outline-none transition duration-200 focus:-translate-y-0.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
             placeholder="What needs doing?"
             value={newTask}
             onChange={handleChange}
@@ -67,7 +70,7 @@ const Todo = () => {
           <button
             type="submit"
             disabled={!taskTitle}
-            className="rounded bg-blue-600 px-4 py-2 font-bold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="rounded bg-blue-600 px-4 py-2 font-bold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 active:translate-y-0 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:hover:translate-y-0 disabled:hover:shadow-none"
           >
             Add
           </button>
@@ -78,7 +81,7 @@ const Todo = () => {
             {tasks.map((task) => (
               <li
                 key={task.id}
-                className="flex items-center justify-between gap-4 rounded border border-slate-200 bg-white p-3 shadow-sm"
+                className="animate-task-pop flex items-center justify-between gap-4 rounded border border-slate-200 bg-white p-3 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
               >
                 <span className="min-w-0 flex-1 break-words">
                   {task.title}
@@ -87,7 +90,7 @@ const Todo = () => {
                 <button
                   type="button"
                   onClick={() => deleteTask(task.id)}
-                  className="rounded cursor-pointer bg-red-600 px-3 py-1 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="cursor-pointer rounded bg-red-600 px-3 py-1 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-300 active:translate-y-0"
                 >
                   Delete
                 </button>
@@ -95,7 +98,7 @@ const Todo = () => {
             ))}
           </ul>
         ) : (
-          <p className="rounded border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+          <p className="animate-task-pop rounded border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
             No tasks yet.
           </p>
         )}
